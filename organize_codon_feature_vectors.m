@@ -15,7 +15,7 @@ ligand_names = unique(bc_sens_table.ligand, 'stable');
 mparams = 10.^linspace(0, 3, 21);
 dose_names = {'0.3', '0.33', '3.3', '10', '33', '100', '330'};
 
-metric_cluster = extract_codon_cluster(metrics, bc_names, ligand_names, metric_fields);
+[metric_cluster, untreated_metric_cluster] = extract_codon_cluster(metrics, bc_names, ligand_names, metric_fields);
 
 % Non-responders are defined as conditions with trajectories that have a
 % peak conc. < 0.05 nM
@@ -32,32 +32,47 @@ total_std(6) = nanstd(metric_cluster(:, 6));
 metric_cluster_norm(:, 6) = (metric_cluster(:,6) - nanmean(metric_cluster(:, 6))) ...
                            /nanstd(metric_cluster(:, 6));
 metric_cluster_norm(isnan(metric_cluster_norm)) = 0;
+
+for i = 1:size(untreated_metric_cluster, 1)
+    if untreated_metric_cluster(i, 3) < 0.05
+        untreated_metric_cluster(i, 5) = 4; %EvL
+        untreated_metric_cluster(i, 6) = 0; %1st peak time
+    end
+end
+
+untreated_metric_cluster_norm = (untreated_metric_cluster - total_mean) ./ total_std;
+
+
 cluster_labels = create_cluster_labels(bc_sens_table);
 
 metric_heatmap = reshape_cluster_to_heatmap(metric_cluster_norm);
 heatmap_labels = create_heatmap_labels(bc_sens_table);
 
-save("Codon_cluster_norm_nonres_correction.mat", "metric_cluster_norm", "cluster_labels", "bc_sens_table", "metrics")
+save("Codon_cluster_norm_nonres_correction.mat", "metric_cluster_norm", "untreated_metric_cluster_norm", ...
+    "cluster_labels", "bc_sens_table", "metrics")
 save("Codon_heatmap_norm_nonres_correction.mat", "metric_heatmap", "heatmap_labels", "bc_sens_table", "metrics")
+
+%Saving non-responder indices
+save("non_responders_inds.mat", "no_response_row", "cluster_labels")
 %% Extracts specified n metrics (codons) and organizes them into a 3000 x n cluster
 
-function metric_cluster = extract_codon_cluster(metrics, bc_names, ligand_names, metric_fields)
-    c = 1;
-    while c <= 3000
-        for i_bc_group = [10, 1:9] %TSA first
+function [metric_cluster, untreated_metric_cluster] = extract_codon_cluster(metrics, bc_names, ligand_names, metric_fields)
+c = 1;
+while c <= 3000
+    for i_bc_group = [10, 1:9] %TSA first
         
-            if strcmp(bc_names(i_bc_group), 'TSA') %TSA is the only enhancer, so effect is reversed
-                i_mparam_range = 2:21;
-            else
+        if strcmp(bc_names(i_bc_group), 'TSA')
+            i_mparam_range = 2:21;
+        else
             i_mparam_range = flip(1:20);
-            end
+        end
         
-            for i_mparam = i_mparam_range
+        for i_mparam = i_mparam_range
 
-        
-                for i_ligand = 1:length(ligand_names)
+            ut = 1;
+            for i_ligand = 1:length(ligand_names)
             
-                    for i_dose = 1:3
+                for i_dose = 1:3
                         for i_metric = 1:length(metric_fields)
                             if metric_fields{i_metric} == "duration"
                                 col = 2;
@@ -66,22 +81,45 @@ function metric_cluster = extract_codon_cluster(metrics, bc_names, ligand_names,
                             end
                             if metric_fields{i_metric} == "time2HalfMaxPosIntegral"
                                 m = abs(metrics{i_bc_group, i_ligand}{i_dose}.(metric_fields{i_metric})(i_mparam,col) - 8);
+                                untreated_m = abs(metrics{i_bc_group, i_ligand}{i_dose}.(metric_fields{i_metric})(untreated_ind,col) - 8);
+                                
+                                %if metrics{i_bc_group, i_ligand}{i_dose}.(metric_fields{3})(i_mparam,col) < 0.05
+                                %    m = 4;
+                                %    untreated_m = 4;
+                                %else
+                                %    m = abs(metrics{i_bc_group, i_ligand}{i_dose}.(metric_fields{i_metric})(i_mparam,col) - 8);
+                                %    untreated_m = abs(metrics{i_bc_group, i_ligand}{i_dose}.(metric_fields{i_metric})(untreated_ind,col) - 8);
+                                %end
                             else
                                 m = metrics{i_bc_group, i_ligand}{i_dose}.(metric_fields{i_metric})(i_mparam,col);
+                                untreated_m = metrics{i_bc_group, i_ligand}{i_dose}.(metric_fields{i_metric})(untreated_ind,col);
                             end
+                            
+                            if metric_fields{i_metric} == "pk1_time" %Speed of first detectable peak
+                                if metrics{i_bc_group, i_ligand}{i_dose}.(metric_fields{3})(i_mparam,col) < 0.05 
+                                    m = 0;
+                     
+                                else
+                                    m = metrics{i_bc_group, i_ligand}{i_dose}.(metric_fields{i_metric})(i_mparam,col);
+                                    untreated_m = metrics{i_bc_group, i_ligand}{i_dose}.(metric_fields{i_metric})(untreated_ind,col);
+                                end
+                            end
+                                    
 
         
                             metric_cluster(c, i_metric) = m;
+                            untreated_metric_cluster(ut, i_metric) = untreated_m;
                         
 
                         end
-                            c = c + 1;
-                    end
+                        ut = ut + 1;
+                        c = c + 1;
+                 end
 
-                end
             end
         end
     end
+end
 end
 
 %% reformatting cluster matrix into a 150 x (# of features * 20 drug doses) heatmap
