@@ -1,0 +1,3 @@
+%% Path for all codon calculation functions
+codon_path = '../NFkB_codon/';
+% Load simulation results
