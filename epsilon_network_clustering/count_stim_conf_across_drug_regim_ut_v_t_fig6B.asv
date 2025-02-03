@@ -1,0 +1,78 @@
+%% Load untreated vs treated cluster results
+
+load('metric_cluster_array_perstim_ut_v_t_052324.mat')
+
+%%
+fig_path = '../Fig6/';
+
+mycolor_map = [1,1,1;
+    1,0,0;
+    0,0,0];
+
+% Create a figure
+
+pic_num_each_column =10;
+pic_num_each_row = 20;
+
+
+paperpos=[0,0,100*pic_num_each_row,80*pic_num_each_column]*2;
+papersize=[100*pic_num_each_row 80*pic_num_each_column]*2;
+ptcolor=[0,0,0];
+
+
+%% change the sub figure size here
+subfig_left = 0.1;
+subfig_bottom = 0.1;
+subfig_width = 0.8;
+subfig_length = 0.8;
+
+i_map = 1;
+A_sum = zeros(15);
+for file_num=1:pic_num_each_column% ;%len6
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    for k=1:pic_num_each_row
+        
+        b = cluster_array_all{i_map};
+        non_responder_cluster_elements = non_responders_array{i_map};
+        
+        % Iterate over each cell in b
+        for i_col = 1:length(b)
+            % If the cell contains more than one element
+            if numel(b{i_col}) >= 1
+                for i_row = 1:length(b{i_col})
+                    A_sum(b{i_col}(i_row), i_col) = 1 + A_sum(b{i_col}(i_row), i_col);
+                end
+            end
+        end
+  
+        i_map = i_map+1;
+    end
+end
+
+paperpos = [0,0,100,100];
+papersize = [100,100];
+
+figure(4)
+set(gcf, 'PaperUnits','points')
+set(gcf, 'PaperPosition', paperpos,'PaperSize', papersize)
+
+
+A_sum(:, 4) = zeros(15, 1);
+
+
+imagesc(A_sum);
+colormap(parula); % Apply your color map
+%caxis([0,100]);
+colorbar;
+
+
+set(gca, 'box', 'off'); % Turn off the box surrounding the plot
+%         set(gca, 'XAxisLocation', 'bottom'); % Keep the x-axis (bottom)
+%         set(gca, 'YAxisLocation', 'left'); % Keep the y-axis (left)
+set(gca, 'XTick', []); % Optionally remove x-axis ticks if desired
+set(gca, 'YTick', []); % Optionally remove y-axis ticks if desired
+
+%exportgraphics(gcf, 'Fig6/Fig6B_0520.eps','Resolution',600)
+saveas(gcf,strcat('../subfigures/stimuli_confusion_map','eps');
+%close
