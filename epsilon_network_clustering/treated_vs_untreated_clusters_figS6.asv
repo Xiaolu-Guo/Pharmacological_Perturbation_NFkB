@@ -1,8 +1,0 @@
-%% Load cluster (treated and untreated) and non-responder data
-
-load("../Codon_cluster_norm_nonres_correction.mat")
-load("../non_responders_per_drug_regime.mat")
-
-%% Load clustering results
-save("optimal_clusters_all_methods_CPD_scaled_102225.mat"
-epsilon = methods_struct.codons.opt_epsilon;

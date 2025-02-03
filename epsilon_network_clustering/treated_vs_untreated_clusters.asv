@@ -1,4 +1,0 @@
-%% Load cluster (treated and untreated) and non-responder data
-
-load("treated_untreated_codon_cluster_020624.mat")
-load("non_responders_per_drug_regime.mat")
