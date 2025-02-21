@@ -1,6 +1,6 @@
 %% Load trajectories (bc_sens_table) and codons (metrics)
 
-load('Pharm_metrics_2023osc_051423.mat')
+load('../Pharm_metrics_2023osc_051423.mat')
 % metrics = 10 (drugs) x 5 (stimuli) cell
     % inside of each is a 1 x 3 cell representing the 3 stim doses
         % inside of each is a struct consisting of 21 x n vectors
@@ -48,12 +48,12 @@ cluster_labels = create_cluster_labels(bc_sens_table);
 metric_heatmap = reshape_cluster_to_heatmap(metric_cluster_norm);
 heatmap_labels = create_heatmap_labels(bc_sens_table);
 
-save("Codon_cluster_norm_nonres_correction.mat", "metric_cluster_norm", "untreated_metric_cluster_norm", ...
+save("../Codon_cluster_norm_nonres_correction.mat", "metric_cluster_norm", "untreated_metric_cluster_norm", ...
     "cluster_labels", "bc_sens_table", "metrics")
-save("Codon_heatmap_norm_nonres_correction.mat", "metric_heatmap", "heatmap_labels", "bc_sens_table", "metrics")
+save("../Codon_heatmap_norm_nonres_correction.mat", "metric_heatmap", "heatmap_labels", "bc_sens_table", "metrics")
 
 %Saving non-responder indices
-save("non_responders_inds.mat", "no_response_row", "cluster_labels")
+save("../non_responders_inds.mat", "no_response_row", "cluster_labels")
 %% Extracts specified n metrics (codons) and organizes them into a 3000 x n cluster
 
 function [metric_cluster, untreated_metric_cluster] = extract_codon_cluster(metrics, bc_names, ligand_names, metric_fields)
@@ -63,8 +63,10 @@ while c <= 3000
         
         if strcmp(bc_names(i_bc_group), 'TSA')
             i_mparam_range = 2:21;
+            untreated_ind = 1;
         else
             i_mparam_range = flip(1:20);
+            untreated_ind = 21;
         end
         
         for i_mparam = i_mparam_range
