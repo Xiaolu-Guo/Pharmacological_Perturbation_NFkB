@@ -6,7 +6,7 @@ ground_truth_array{3}= {[1,2,3,13,14,15],[4,7,10],[5,8],[6],[9],[11,12]};
 ground_truth_array{4} = {[1], [2], [3], [4], [5,8], [6], [7], [9,14,15], [10], [11,12], [13]}; %7 might be non responder, 14 has a big trough... mayb eby itself
 ground_truth_array{5} = {[1:5,7,8,10:14], [6], [9,15]};
 
-example_ind = [58, 91, 106, 175, 194];
+example_ind = [48, 91, 106, 175, 194];
 
 %% CODONS
 
@@ -80,20 +80,20 @@ traj.mis_cluster_matrix = opt_epsilon_per_method(traj.epsilon_all, pw_dist_traj,
 
 %% Clustering across all feature spaces according to their optimal epsilon
 
-%Choosing max optimal epsilon for now...
-codons.opt_epsilon = max(codons.epsilon_choice);
+%Choosing min optimal epsilon for now...
+codons.opt_epsilon = min(codons.epsilon_choice);
 codons.cluster_array_all = opt_recluster(codons.pw_dist, codons.opt_epsilon);
 
-comp40.opt_epsilon = max(comp40.epsilon_choice);
+comp40.opt_epsilon = min(comp40.epsilon_choice);
 comp40.cluster_array_all = opt_recluster(comp40.pw_dist, comp40.opt_epsilon);
 
-comp7.opt_epsilon = max(comp7.epsilon_choice);
+comp7.opt_epsilon = min(comp7.epsilon_choice);
 comp7.cluster_array_all = opt_recluster(comp7.pw_dist, comp7.opt_epsilon);
 
-fpca.opt_epsilon = max(fpca.epsilon_choice);
+fpca.opt_epsilon = min(fpca.epsilon_choice);
 fpca.cluster_array_all = opt_recluster(fpca.pw_dist, fpca.opt_epsilon);
 
-traj.opt_epsilon = max(traj.epsilon_choice);
+traj.opt_epsilon = min(traj.epsilon_choice);
 traj.cluster_array_all = opt_recluster(traj.pw_dist, traj.opt_epsilon);
 
 methods_struct.codons = codons;
